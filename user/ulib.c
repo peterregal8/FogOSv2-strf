@@ -165,13 +165,19 @@ long int
 strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...) 
 {
   char buf[maxsize];
-  int j = 0;
-  for (int i = 0; i < strlen(format); i++) {
+  int i = 0;
+  while ((i < strlen(format)) && (format[i] != '%')) {
     buf[i] = format[i];
-    j++;
+    i++;
   }
-  buf[j] = '\n';
-  strcpy(s, buf);
+  buf[i] = '\n';
+  s[0] = '[';
+  int l = 1;
+  for (int k = 1; k < strlen(buf); k++) {
+    s[k] = buf[k - 1];
+    l++;
+  }
+  s[l] = ']';
   return strlen(buf);
   //printf("%s\n", buf);
 }
