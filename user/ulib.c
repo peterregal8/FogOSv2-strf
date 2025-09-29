@@ -4,6 +4,7 @@
 #include "kernel/riscv.h"
 #include "kernel/vm.h"
 #include "user/user.h"
+#include <stddef.h>
 
 //
 // wrapper so that it's OK if main() does not call exit().
@@ -149,12 +150,29 @@ memcpy(void *dst, const void *src, uint n)
 }
 
 char *
-sbrk(int n) {
+sbrk(int n) 
+{
   return sys_sbrk(n, SBRK_EAGER);
 }
 
 char *
-sbrklazy(int n) {
+sbrklazy(int n) 
+{
   return sys_sbrk(n, SBRK_LAZY);
+}
+
+long int
+strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...) 
+{
+  char buf[maxsize];
+  int j = 0;
+  for (int i = 0; i < strlen(format); i++) {
+    buf[i] = format[i];
+    j++;
+  }
+  buf[j] = '\n';
+  strcpy(s, buf);
+  return strlen(buf);
+  //printf("%s\n", buf);
 }
 
