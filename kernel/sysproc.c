@@ -105,3 +105,17 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_time(void){
+	volatile uint32 *first = (uint32 *) TSTAMP;
+	volatile uint32 *second = (uint32 *) (TSTAMP + 4);
+
+	uint32 begin = *first;
+	uint32 end = *second;
+
+	volatile uint64 ret = ((uint64)end << 32) | begin;
+
+	ret = ret/1000000000;
+	return ret;
+}
