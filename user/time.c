@@ -1,6 +1,6 @@
+#include "kernel/types.h"
 #include "user/user.h"
 #include "user/time.h"
-#include "kernel/type.h"
 #include "kernel/stat.h"
 
 int is_leap(int year){
@@ -48,14 +48,14 @@ void unix_to_time(long ts, struct tm *t){
 			break;
 		}
 	}
-	t->mon = month;
+	t->month = month;
 	
 	// our days is from 0 (index) so we need to add one to get the actual days
 	t->mday = days + 1;
 
 	// adding 4 to days_total because unix epoch (Jan 1, 1970) was a thursday (day 4)
 	// modulo 7 wraps around 0-6. 
-	t->wday = (4 + days_total) % 7;
+	t->wday = (4 + days) % 7;
 }
 
 // needed a helper function to append numbers to buffers. had to create this, had internet help with this
@@ -88,14 +88,14 @@ static const char *month_names[12] = {
 int strftime(char *buf, int max, const struct tm *t){
 	int pos = 0;
 
-	const char *m = month_names[t->mon];
+	const char *m = month_names[t->month];
 	while (*m && pos < max - 1){
 		buf[pos++] = *m++;
 	}
 	buf[pos++] = ' ';
 
 	// day
-	append_number(buf, &pos, t->day, 2);
+	append_number(buf, &pos, t->mday, 2);
 	buf[pos++] = ',';
 	buf[pos++] = ' ';
 
@@ -113,4 +113,16 @@ int strftime(char *buf, int max, const struct tm *t){
 
 	buf[pos] = '\0';
 	return pos;
+}
+
+int main(int argc, char *argv[]){
+	uint64 ts = time();
+	struct tm t;
+	unix_to_time((long)ts, &t);
+	
+	char buf[128];
+	strftime(buf, 128, &t);
+
+	printf("time and date is: %s\n", buf);
+	exit(0);
 }
