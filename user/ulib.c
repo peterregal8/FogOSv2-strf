@@ -228,6 +228,7 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
   buf[i] = '\n';
   if (defaultstr == 1) {
     s[0] = '[';
+    s[1] = 'l';
   } else {
     s[0] = '[';
     int l = 1;
