@@ -164,21 +164,41 @@ sbrklazy(int n)
 long int
 strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...) 
 {
+  int defaultstr = 0; // default money formatting
   char buf[maxsize];
+  char align[32];
   int i = 0;
   while ((i < strlen(format)) && (format[i] != '%')) {
     buf[i] = format[i];
     i++;
   }
   buf[i] = '\n';
-  s[0] = '[';
-  int l = 1;
-  for (int k = 1; k < strlen(buf); k++) {
-    s[k] = buf[k - 1];
-    l++;
+  if (format[i] == 'n') { // check for n right after % for default formatting
+    defaultstr = 1;
+  } else {
+    int alignnum = 0;
+    while (i < strlen(format)) {
+        align[alignnum] = format[i];
+        alignnum++;
+        i++;
+    }
+    align[alignnum] = '\n';
   }
-  s[l] = ']';
-  return strlen(buf);
-  //printf("%s\n", buf);
+  if (defaultstr == 1) {
+    return 0;
+  } else {
+      s[0] = '[';
+      int l = 1;
+      for (int f = 0; f < atoi(align) - strlen(buf) - 2; f++) {
+        s[l] = ' ';
+        l++;
+      }
+      for (int k = 1; k < strlen(buf); k++) {
+        s[k] = buf[k - 1];
+        l++;
+      }
+      s[l] = ']';
+      return strlen(buf);
+  }
 }
 
