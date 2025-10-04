@@ -161,56 +161,6 @@ sbrklazy(int n)
   return sys_sbrk(n, SBRK_LAZY);
 }
 
-/*
-long int
-strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...) 
-{
-  int defaultstr = 0; // default money formatting
-  char buf[maxsize];
-  char align[32];
-  int i = 0;
-  while ((i < strlen(format)) && (format[i] != '%')) {
-    buf[i] = format[i];
-    i++;
-  }
-  buf[i] = '\n';
-  if (format[i] == 'n') { // check for n right after % for default formatting
-    defaultstr = 1;
-  } else {
-    int alignnum = 0;
-    while (i < strlen(format)) {
-      align[alignnum] = format[i];
-      alignnum++;
-      i++;
-    }
-    align[alignnum] = '\n';
-  }
-  if (defaultstr == 1) {
-    s[0] = '[';
-    int l = 1;
-    for (int k = 1; k < strlen(buf); k++) {
-      s[k] = buf[k - 1];
-      l++;
-    }
-    s[l] = ']';
-    return strlen(buf);
-  } else {
-    s[0] = '[';
-    int l = 1;
-    for (int f = 0; f < atoi(align) - strlen(buf) - 2; f++) {
-      s[l] = ' ';
-      l++;
-    }
-    for (int k = 1; k < strlen(buf); k++) {
-      s[k] = buf[k - 1];
-      l++;
-    }
-    s[l] = ']';
-    return strlen(buf);
-  }
-}
-*/
-
 long int
 strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...) 
 {
@@ -250,6 +200,24 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
         }
         l++;    
       }  
+      s[k] = ']';
+    } else {
+      while (bufindex < strlen(buf)) {
+        s[k] = buf[l];
+        bufindex++;
+        k++;
+        if ((strlen(buf) - bufindex) % 3 == 0 && strlen(buf) != bufindex) {
+            s[k] = ',';
+            k++;
+        }
+        l++;
+      }
+      s[k] = '.';
+      k++;
+      s[k] = '0';
+      k++;
+      s[k] = '0';
+      k++;
       s[k] = ']';
     }
   } else {
