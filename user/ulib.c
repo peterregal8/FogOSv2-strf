@@ -215,9 +215,13 @@ long int
 strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...) 
 {
   int defaultstr = 0;
+  int hasdecimal = 0;
   char buf[maxsize];
   int i = 0;
   while ((i < strlen(format)) && (format[i] != '%')) {
+    if (format[i] == '.') {
+        hasdecimal = 1;
+    }
     buf[i] = format[i];
     i++;
   }
@@ -229,12 +233,25 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
   if (defaultstr == 1) {
     s[0] = '[';
     s[1] = '$';
-    int l = 2;
-    for (int k = 2; k < strlen(buf) + 2; k++) {
-      s[k] = buf[k - 2];
-      l++;
-    }  
-    s[l] = ']';
+    int bufindex = 0;
+    int k = 2;
+    int l = 0;
+    if (hasdecimal == 1) {
+      int beforedecimal = strlen(buf) - 3;
+      while (bufindex < strlen(buf)) {
+        s[k] = buf[l];
+        bufindex++;
+        k++;
+        if (bufindex < beforedecimal) {
+          if ((beforedecimal - bufindex) % 3 == 0) {
+            s[k] = ',';
+            k++;
+          }
+        }
+        l++;    
+      }  
+      s[k] = ']';
+    }
   } else {
     s[0] = '[';
     int l = 1;
