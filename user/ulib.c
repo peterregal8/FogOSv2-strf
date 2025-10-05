@@ -166,11 +166,15 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
 {
   int defaultstr = 0;
   int hasdecimal = 0;
+  int hasfill = 0;
   int grouping = 1;
   int symbol = 1;
   //int negative = 0;
   char buf[maxsize];
   int i = 0;
+  char fill = ' ';
+  int numfill = 0;
+  int specialfill = 0;
   //if (format[0] == '-') {
     //negative = 1;
     //i++;
@@ -191,6 +195,12 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
         grouping = 0;
       } else if (format[i] == '!') {
         symbol = 0;
+      } else if (format[i] == '=') {
+        specialfill = 1;
+        fill = format[i + 1];
+      } else if (format[i] == '#') {
+        hasfill = 1;
+        numfill = format[i + 1] - '0';
       }
       i++;
     }
@@ -223,6 +233,8 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
         l++;    
       }  
       s[k] = ']';
+      k++;
+      s[k] = '\0';
     } else {
       while (bufindex < strlen(buf)) {
         s[k] = buf[l];
@@ -241,6 +253,8 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
       s[k] = '0';
       k++;
       s[k] = ']';
+      k++;
+      s[k] = '\0';
     }
   } else {
     int k = 0;
@@ -254,6 +268,17 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
     if (symbol == 1) {
       s[k] = '$';
       k++;
+    }
+    if (hasfill == 1) {
+      int digits = strlen(buf) - 3;
+      for (int i = 0; i < numfill - digits; i++) {
+        if (specialfill == 1) {
+          s[k] = fill;
+        } else {
+          s[k] = ' ';
+        }
+        k++; 
+      }
     }
     if (grouping == 1) {
       int l = 0;
@@ -272,6 +297,8 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
           l++;    
         }  
         s[k] = ']';
+        k++;
+        s[k] = '\0';
       } else {
         while (bufindex < strlen(buf)) {
           s[k] = buf[l];
@@ -290,6 +317,8 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
         s[k] = '0';
         k++;
         s[k] = ']';
+        k++;
+        s[k] = '\0';
       }
     } else {
       if (hasdecimal == 1) {
@@ -299,6 +328,8 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
           bufindex++;
         }
         s[k] = ']';
+        k++;
+        s[k] = '\0';
       } else {
         while (bufindex < strlen(buf)) {
           s[k] = buf[bufindex];
@@ -312,9 +343,11 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
         s[k] = '0';
         k++;
         s[k] = ']';
+        k++;
+        s[k] = '\0';
       }
     }
   }
-  return strlen(buf);
+  return strlen(s);
 }
 
