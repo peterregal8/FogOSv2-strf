@@ -6,7 +6,7 @@ int
 main(int argc, char *argv[])
 {
   char buf[64];
-  strfmon(buf, 64, "45132%n");
+  strfmon(buf, 64, "45132.65%^!n");
   printf("%s\n", buf);
   return 1;
 }

@@ -166,11 +166,18 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
 {
   int defaultstr = 0;
   int hasdecimal = 0;
+  int grouping = 1;
+  int symbol = 1;
+  //int negative = 0;
   char buf[maxsize];
   int i = 0;
+  //if (format[0] == '-') {
+    //negative = 1;
+    //i++;
+  //}
   while ((i < strlen(format)) && (format[i] != '%')) {
     if (format[i] == '.') {
-        hasdecimal = 1;
+      hasdecimal = 1;
     }
     buf[i] = format[i];
     i++;
@@ -178,13 +185,28 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
   i++;
   if (format[i] == 'n') {
     defaultstr = 1;
+  } else {
+    while (i < strlen(format)) {
+      if (format[i] == '^') {
+        grouping = 0;
+      } else if (format[i] == '!') {
+        symbol = 0;
+      }
+      i++;
+    }
   }
   buf[i] = '\n';
   if (defaultstr == 1) {
-    s[0] = '[';
-    s[1] = '$';
+    int k = 0;
+    s[k] = '[';
+    k++;
+    //if (negative == 1) {
+      //s[k] = '-';
+      //k++;
+    //}
+    s[k] = '$';
+    k++;
     int bufindex = 0;
-    int k = 2;
     int l = 0;
     if (hasdecimal == 1) {
       int beforedecimal = strlen(buf) - 3;
@@ -207,8 +229,8 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
         bufindex++;
         k++;
         if ((strlen(buf) - bufindex) % 3 == 0 && strlen(buf) != bufindex) {
-            s[k] = ',';
-            k++;
+          s[k] = ',';
+          k++;
         }
         l++;
       }
@@ -221,15 +243,78 @@ strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...)
       s[k] = ']';
     }
   } else {
-    s[0] = '[';
-    int l = 1;
-    for (int k = 1; k < strlen(buf); k++) {
-      s[k] = buf[k - 1];
-      l++;
-    }  
-    s[l] = ']';
+    int k = 0;
+    s[k] = '[';
+    k++;
+    //if (negative == 1) {
+      //s[k] = '-';
+      //k++;
+    //}
+    int bufindex = 0;
+    if (symbol == 1) {
+      s[k] = '$';
+      k++;
+    }
+    if (grouping == 1) {
+      int l = 0;
+      if (hasdecimal == 1) {
+        int beforedecimal = strlen(buf) - 3;
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[l];
+          bufindex++;
+          k++;
+          if (bufindex < beforedecimal) {
+            if ((beforedecimal - bufindex) % 3 == 0) {
+              s[k] = ',';
+              k++;
+            }
+          }
+          l++;    
+        }  
+        s[k] = ']';
+      } else {
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[l];
+          bufindex++;
+          k++;
+          if ((strlen(buf) - bufindex) % 3 == 0 && strlen(buf) != bufindex) {
+            s[k] = ',';
+            k++;
+          }
+          l++;
+        }
+        s[k] = '.';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = ']';
+      }
+    } else {
+      if (hasdecimal == 1) {
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[bufindex];
+          k++;
+          bufindex++;
+        }
+        s[k] = ']';
+      } else {
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[bufindex];
+          k++;
+          bufindex++;
+        }
+        s[k] = '.';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = ']';
+      }
+    }
   }
   return strlen(buf);
-  //printf("%s\n", buf);
 }
 
