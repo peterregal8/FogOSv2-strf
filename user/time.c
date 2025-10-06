@@ -144,7 +144,7 @@ int strftime(char *buf, int max, const char *fmt,  const struct tm *t){
 				case 'j': //DAY OF THE YEAR, i.e. day 46 of 365
 					itoa(t->yday, temp, 2);
 					break;
-				case 'w': //DAY OF THE WEEK (MONDAY, TUESDAY, ETC)
+				case 'w': //MONTH IN WORD FORMAT
 					strcpy(temp, month_names[t->month]);
 					break;
 				default:
