@@ -4,6 +4,7 @@
 #include "kernel/riscv.h"
 #include "kernel/vm.h"
 #include "user/user.h"
+#include <stddef.h>
 
 //
 // wrapper so that it's OK if main() does not call exit().
@@ -172,12 +173,209 @@ memcpy(void *dst, const void *src, uint n)
 }
 
 char *
-sbrk(int n) {
+sbrk(int n) 
+{
   return sys_sbrk(n, SBRK_EAGER);
 }
 
 char *
-sbrklazy(int n) {
+sbrklazy(int n) 
+{
   return sys_sbrk(n, SBRK_LAZY);
+}
+
+long int
+strfmon(char *restrict s, size_t maxsize, const char *restrict format, ...) 
+{
+  /* Specification booleans, will be adjusted according to what's found in format */
+  int defaultstr = 0;
+  int hasdecimal = 0;
+  int hasfill = 0;
+  int grouping = 1;
+  int symbol = 1;
+  char fill = ' ';
+  int numfill = 0;
+  int specialfill = 0;
+
+  // Used to store the raw monetary value
+  char buf[maxsize];
+  // Index for this buffer
+  int i = 0;         
+
+  // Fills the buffer character by character from format until % is reached
+  while ((i < strlen(format)) && (format[i] != '%')) {
+    // Checking if user gave a decimal value or not
+    if (format[i] == '.') { 
+      hasdecimal = 1;
+    }
+    buf[i] = format[i];
+    i++;
+  }
+  i++;
+  
+  // If the conversion specification is only "%n", no adjustments are needed
+  if (format[i] == 'n') {
+    defaultstr = 1;
+  } else {
+    // Adjusts booleans and other variables if it finds certain characters in format
+    while (i < strlen(format)) {      
+      if (format[i] == '^') {
+        grouping = 0; 
+      } else if (format[i] == '!') {
+        symbol = 0;
+      } else if (format[i] == '=') {
+        specialfill = 1;
+        fill = format[i + 1];
+      } else if (format[i] == '#') {
+        hasfill = 1;
+        numfill = format[i + 1] - '0';
+      }
+      i++;
+    }
+  }
+  buf[i] = '\n';
+  
+  if (defaultstr == 1) {
+    int k = 0;
+    s[k] = '[';
+    k++;
+    s[k] = '$';
+    k++;
+    int bufindex = 0;
+    int l = 0;
+    if (hasdecimal == 1) {
+      // Handling grouping
+      int beforedecimal = strlen(buf) - 3;
+      while (bufindex < strlen(buf)) {
+        s[k] = buf[l];
+        bufindex++;
+        k++;
+        if (bufindex < beforedecimal) {
+          if ((beforedecimal - bufindex) % 3 == 0) {
+            s[k] = ',';
+            k++;
+          }
+        }
+        l++;    
+      }  
+      s[k] = ']';
+      k++;
+      s[k] = '\0';
+    } else {
+      while (bufindex < strlen(buf)) {
+        s[k] = buf[l];
+        bufindex++;
+        k++;
+        if ((strlen(buf) - bufindex) % 3 == 0 && strlen(buf) != bufindex) {
+          s[k] = ',';
+          k++;
+        }
+        l++;
+      }
+      // Adding ending characters if no decimal given
+      s[k] = '.';
+      k++;
+      s[k] = '0';
+      k++;
+      s[k] = '0';
+      k++;
+      s[k] = ']';
+      k++;
+      s[k] = '\0';
+    }
+  } else {
+    int k = 0;
+    s[k] = '[';
+    k++;
+    int bufindex = 0;
+    // Only adds $ if it hasn't been disabled
+    if (symbol == 1) {
+      s[k] = '$';
+      k++;
+    }
+    if (hasfill == 1) {
+      int digits = strlen(buf);
+      if (hasdecimal == 1) {
+        digits = strlen(buf) - 3;
+      }
+      for (int i = 0; i < numfill - digits; i++) {
+        if (specialfill == 1) {
+          s[k] = fill;
+        } else {
+          s[k] = ' ';
+        }
+        k++; 
+      }
+    }
+    if (grouping == 1) {
+      int l = 0;
+      if (hasdecimal == 1) {
+        int beforedecimal = strlen(buf) - 3;
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[l];
+          bufindex++;
+          k++;
+          if (bufindex < beforedecimal) {
+            if ((beforedecimal - bufindex) % 3 == 0) {
+              s[k] = ',';
+              k++;
+            }
+          }
+          l++;    
+        }  
+        s[k] = ']';
+        k++;
+        s[k] = '\0';
+      } else {
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[l];
+          bufindex++;
+          k++;
+          if ((strlen(buf) - bufindex) % 3 == 0 && strlen(buf) != bufindex) {
+            s[k] = ',';
+            k++;
+          }
+          l++;
+        }
+        s[k] = '.';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = ']';
+        k++;
+        s[k] = '\0';
+      }
+    } else {
+      // Simpler case, no grouping
+      if (hasdecimal == 1) {
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[bufindex];
+          k++;
+          bufindex++;
+        }
+        s[k] = ']';
+        k++;
+        s[k] = '\0';
+      } else {
+        while (bufindex < strlen(buf)) {
+          s[k] = buf[bufindex];
+          k++;
+          bufindex++;
+        }
+        s[k] = '.';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = '0';
+        k++;
+        s[k] = ']';
+        k++;
+        s[k] = '\0';
+      }
+    }
+  }
+  return strlen(s);
 }
 
