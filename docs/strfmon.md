@@ -5,9 +5,13 @@ This function -- added to the user library (user/ulib.c) -- takes a user-inputte
 
 ### Flags/specifications implemented
 ``#n`` - number of digits to format to the left of the decimal point. If the value of ``n`` is less than the number of digits of the money amount, then nothing happens. Otherwise, unused positions will be filled according to the ``=f`` flag.
+
 ``=f`` - fill character to use. If this flag is not given, then the empty characters will be filled with spaces. 
+
 ``^`` - disable the grouping character. By default, monetary values will be separated with commas.
+
 ``!`` - disable the currency symbol. By default, monetary values will have the $ sign.
+
 Every specification starts with ``%`` and ends with ``n``.
 
 ### Build/testing
