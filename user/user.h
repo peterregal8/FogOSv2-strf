@@ -25,10 +25,12 @@ char* sys_sbrk(int,int);
 int pause(int);
 int uptime(void);
 int time(void);
+int timeTest(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);
+char* strcat(char*, const char*);
 void *memmove(void*, const void*, int);
 char* strchr(const char*, char c);
 int strcmp(const char*, const char*);

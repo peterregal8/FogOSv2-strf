@@ -27,6 +27,29 @@ strcpy(char *s, const char *t)
   return os;
 }
 
+//borrowed with permission from chat
+char*
+strcat(char *dest, const char *src) {
+	char *d = dest;
+
+	//move d to the end of dest
+	while (*d != '\0'){
+		d++;
+	}
+
+	//copy src onto the end of dest
+	while (*src != '\0') {
+		*d = *src;
+		d++;
+		src++;
+	}
+
+	//null terminate
+	*d = '\0';
+
+	return dest;
+}
+
 int
 strcmp(const char *p, const char *q)
 {

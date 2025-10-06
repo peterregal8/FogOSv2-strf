@@ -16,6 +16,6 @@ struct tm {
 void unix_to_time(long ts, struct tm *t);
 
 //formats the actual time as user wants
-int strftime(char *buf, int max, const struct tm *t);
+int strftime(char *buf, int max, const char *fmt, const struct tm *t);
 
 #endif

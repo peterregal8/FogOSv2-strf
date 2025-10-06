@@ -83,46 +83,130 @@ static const char *month_names[12] = {
     "July","August","September","October","November","December"
 };
 
+// ALSO BORROWED
+void itoa(int value, char *str, int width){
+	int i = 0;
+
+	if (value == 0){
+		str[i++] = '0';
+	} else {
+		while (value > 0 && i < width){
+			str[i++] = (value % 10) + '0';
+			value /= 10;
+		}
+	}
+
+	while (i < width) {
+		str[i++] = '0';
+	}
+
+	str[i] = '\0';
+
+	for (int j = 0, k = i - 1; j < k; j++, k--) {
+		char tmp = str[j];
+		str[j] = str[k];
+		str[k] = tmp;
+	}
+}
+
 // originally wanted to give user ability to choose what format but we have very strict
 // availability in XV6 so had to resort to this style only. 
-int strftime(char *buf, int max, const struct tm *t){
-	int pos = 0;
+int strftime(char *buf, int max, const char *fmt,  const struct tm *t){
+	//int pos = 0;
+	//int len = 0;
+	
 
-	const char *m = month_names[t->month];
-	while (*m && pos < max - 1){
-		buf[pos++] = *m++;
+	char temp[32];
+	buf[0] = '\0';
+	// TODO finish the switch case and add the new function signature to the time.h file
+	for(const char *p = fmt; *p != '\0'; p++){
+		if (*p == '%' && *(p + 1)) {
+			p++;
+			switch(*p){
+				case 'Y': //YEAR
+					itoa(t->year, temp, 4);
+					break;
+				case 'm': //MONTh
+					itoa(t->month + 1, temp, 2);
+					break;
+				case 'd': //DAY
+					itoa(t->mday, temp, 2);
+					break;
+				case 'H': //HOUR
+					itoa(t->hour, temp, 2);
+					break;
+				case 'M': //MINUTE
+					itoa(t->min, temp, 2);
+					break;
+				case 'S': //SECOND
+					itoa(t->sec, temp, 2);
+					break;
+				case 'j': //DAY OF THE YEAR, i.e. day 46 of 365
+					itoa(t->yday, temp, 2);
+					break;
+				case 'w': //DAY OF THE WEEK (MONDAY, TUESDAY, ETC)
+					strcpy(temp, month_names[t->month]);
+					break;
+				default:
+					temp[0] = '%';
+					temp[1] = *p;
+					temp[2] = '\0';
+			}
+
+			if(strlen(buf) + strlen(temp) < max - 1){
+				strcat(buf, temp);
+			} else {
+				break;
+			}
+		} else {
+			// not a '%' followed by a char. Instead just copy said char
+			int len = strlen(buf);
+			if (len < max - 1) {
+				buf[len] = *p;
+				buf[len + 1] = '\0';
+			} else {
+				break;
+			}
+		}
 	}
-	buf[pos++] = ' ';
+	
+	return strlen(buf);
+
+	//const char *m = month_names[t->month];
+	//strcpy(buf, m);
+	//pos += strlen(m);
+	//buf[pos++] = ' ';
 
 	// day
-	append_number(buf, &pos, t->mday, 2);
-	buf[pos++] = ',';
-	buf[pos++] = ' ';
+	//append_number(buf, &pos, t->mday, 2);
+	//buf[pos++] = ',';
+	//buf[pos++] = ' ';
 
 	//year
-	append_number(buf, &pos, t->year, 4);
-	buf[pos++] = ' ';
-	buf[pos++] = ' ';
+	//append_number(buf, &pos, t->year, 4);
+	//buf[pos++] = ' ';
+	//buf[pos++] = ' ';
 
 	// time
-	append_number(buf, &pos, t->hour, 2);
-	buf[pos++] = ':';
-	append_number(buf, &pos, t->min, 2);
-	buf[pos++] = ':';
-	append_number(buf, &pos, t->sec, 2);
+	//append_number(buf, &pos, t->hour, 2);
+	//buf[pos++] = ':';
+	//append_number(buf, &pos, t->min, 2);
+	//buf[pos++] = ':';
+	//append_number(buf, &pos, t->sec, 2);
 
-	buf[pos] = '\0';
-	return pos;
+	//buf[pos] = '\0';
+	//return pos;
 }
 
-int main(int argc, char *argv[]){
-	uint64 ts = time();
-	struct tm t;
-	unix_to_time((long)ts, &t);
+//int main(int argc, char *argv[]){
+//	uint64 ts = time();
+//	struct tm t;
+//	unix_to_time((long)ts, &t);
 	
-	char buf[128];
-	strftime(buf, 128, &t);
+//	char buf[128];
+//	strftime(buf, 128, "%m-%d-%Y %H:%M:%S", &t);
 
-	printf("time and date is: %s\n", buf);
-	exit(0);
-}
+	//printf("time and date is: %s\n", buf);
+//	printf("%s\n", buf);
+//	exit(0);
+//}
